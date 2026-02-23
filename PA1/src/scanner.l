@@ -23,14 +23,13 @@ int processString();
 
 %}
 
-newline         //TODO
-whitespace      //TODO
+newline         \n
+whitespace      [ \t\r]+
 integer         //TODO
 character       //TODO
 
  /* String can contain any characters between the double quotes */
  /* other than a newline or unescaped doublequotes */
-*/
 string       //TODO
 
 
@@ -73,8 +72,8 @@ yylineno = 1;
 {multlncomment} //TODO
 
  /* Other */
-{newline}       //TODO
-{whitespace}    //TODO
+{newline}       { countLines(); }
+{whitespace}    { updateCol(); }
 .               {return ILLEGAL_TOK;}
 
 %%
@@ -85,12 +84,15 @@ yylineno = 1;
 Implement this function to keep track of column numbers
 */
 void updateCol(){
+    scancol += yyleng;
 }
 
 /* TODO:
 Implement this function to keep track of line numbers
 */
 void countLines(){
+    scanlineno += 1;
+    scancol = 1;
 }
 
 
