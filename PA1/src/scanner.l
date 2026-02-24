@@ -30,15 +30,15 @@ character       //TODO
 
  /* String can contain any characters between the double quotes */
  /* other than a newline or unescaped doublequotes */
-string       //TODO
+string       \"([^"\n\\]|\\[nt\"\\])*\"
 
 
  /* If the end quote is not found in the same line the string is unterminated */
-untermstring //TODO
+untermstring \"([^"\n\\]|\\[nt\"\\])*\n
 
-comment         //TODO
-multlncomment   //TODO
-untermcomment   //TODO
+comment         \/\/.*
+multlncomment   \/\*([^*]|\*+[^*/])*\*+\/
+untermcomment   \/\*(.|\n)*
 
 identifier      //TODO
 illidentifier   //TODO: regular expression for an illegal identifier
@@ -64,12 +64,30 @@ yylineno = 1;
 {integerlead0}  //TODO: "Integers may not have leading zeros"
 {character}     //TODO
 {string}        {updateCol(); return processString();}
-{untermstring}  {updateCol(); yyerror = "Unterminated string"; return ERROR;}
+{untermstring}  {countLines(); updateCol(); yyerror = "Unterminated string"; return ERROR;}
 
  /* Comments */
-{comment}       //TODO
-{untermcomment} //TODO
-{multlncomment} //TODO
+{comment}       { updateCol(); }
+
+{untermcomment} {
+    for(int i = 0; i < yyleng; i++){
+        if(yytext[i] == '\n'){
+            countLines();
+        }
+    }
+    updateCol();
+    yyerror = "Unterminated comment";
+    return ERROR;
+}
+
+{multlncomment} {
+    for(int i = 0; i < yyleng; i++){
+        if(yytext[i] == '\n'){
+            countLines();
+        }
+    }
+    updateCol();
+}
 
  /* Other */
 {newline}       { countLines(); }
@@ -80,18 +98,20 @@ yylineno = 1;
 
 /* user routines */
 
-/* TODO:
+/*
 Implement this function to keep track of column numbers
 */
 void updateCol(){
+    yycol = scancol;
     scancol += yyleng;
 }
 
-/* TODO:
+/*
 Implement this function to keep track of line numbers
 */
 void countLines(){
     scanlineno += 1;
+    yylineno = scanlineno;
     scancol = 1;
 }
 
