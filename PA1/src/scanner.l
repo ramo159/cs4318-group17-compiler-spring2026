@@ -52,7 +52,14 @@ yylineno = 1;
  /* rules */
 
  /* Keywords */
- /* TODO: Support all keywords in mC */
+ "if"        { updateCol(); return KWD_IF; }
+ "else"      { updateCol(); return KWD_ELSE; }
+ "while"     { updateCol(); return KWD_WHILE; }
+ "int"       { updateCol(); return KWD_INT; }
+ "string"    { updateCol(); return KWD_STRING; }
+ "char"      { updateCol(); return KWD_CHAR; }
+ "return"    { updateCol(); return KWD_RETURN; }
+ "void"      { updateCol(); return KWD_VOID; }
 
  /* Operators */
  /* TODO: Support all operators in mC */
