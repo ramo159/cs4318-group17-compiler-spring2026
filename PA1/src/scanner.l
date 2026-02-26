@@ -62,7 +62,36 @@ yylineno = 1;
  "void"      { updateCol(); return KWD_VOID; }
 
  /* Operators */
- /* TODO: Support all operators in mC */
+  /* Two character operators */
+ "++"        { updateCol(); return OPER_INC; }
+ "--"        { updateCol(); return OPER_DEC; }
+ "<="        { updateCol(); return OPER_LTE; }
+ ">="        { updateCol(); return OPER_GTE; }
+ "=="        { updateCol(); return OPER_EQ; }
+ "!="        { updateCol(); return OPER_NEQ; }
+ "&&"        { updateCol(); return OPER_AND; }
+ "||"        { updateCol(); return OPER_OR; }
+
+ /* One character operators */
+ "+"         { updateCol(); return OPER_ADD; }
+ "-"         { updateCol(); return OPER_SUB; }
+ "*"         { updateCol(); return OPER_MUL; }
+ "/"         { updateCol(); return OPER_DIV; }
+ "%"         { updateCol(); return OPER_MOD; }
+ "<"         { updateCol(); return OPER_LT; }
+ ">"         { updateCol(); return OPER_GT; }
+ "="         { updateCol(); return OPER_ASGN; }
+ "!"         { updateCol(); return OPER_NOT; }
+ "@"         { updateCol(); return OPER_AT; }
+ /* Brackets and punctuation */
+ "["         { updateCol(); return LSQ_BRKT; }
+ "]"         { updateCol(); return RSQ_BRKT; }
+ "{"         { updateCol(); return LCRLY_BRKT; }
+ "}"         { updateCol(); return RCRLY_BRKT; }
+ "("         { updateCol(); return LPAREN; }
+ ")"         { updateCol(); return RPAREN; }
+ ","         { updateCol(); return COMMA; }
+ ";"         { updateCol(); return SEMICLN; }
 
  /* Identifiers */;
 {identifier}    //TODO
