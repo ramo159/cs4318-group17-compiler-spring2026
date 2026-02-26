@@ -12,7 +12,7 @@ int yycol = 1;
 int scanlineno = 1;
 
  /* char pointer to pass error messages to driver.c */
-char *yyerror;
+char *yyerror = NULL;
 
  /* TODO: functions to update line and column numbers */
 void updateCol();
@@ -32,15 +32,15 @@ character       \'[^\'\n]\'
  /* String can contain any characters between the double quotes */
  /* other than a newline or unescaped doublequotes */
 
-string       //TODO
+string       a^
 
 
  /* If the end quote is not found in the same line the string is unterminated */
 untermstring //TODO
 
-comment         //TODO
-multlncomment   //TODO
-untermcomment   //TODO
+comment         a^
+multlncomment   a^
+untermcomment   a^
 
 identifier      [A-Za-z][A-Za-z0-9]*
 illidentifier   [0-9]+[A-Za-z][A-Za-z0-9]*
@@ -93,13 +93,27 @@ yylineno = 1;
  ","         { updateCol(); return COMMA; }
  ";"         { updateCol(); return SEMICLN; }
 
- /* Identifiers */;
-{identifier}    //TODO
-{illidentifier} //TODO
+ /* Identifiers */
+{identifier} {
+  updateCol();
+  return ID;
+}
+{illidentifier} {
+  updateCol();
+  yyerror = "Illegal token";
+  return ERROR;
+}
 
- /* Constants */;
-{integer}       //TODO
-{integerlead0}  //TODO: "Integers may not have leading zeros"
+/* Constants */
+{integerlead0} {
+  updateCol();
+  yyerror = "Illegal token";
+  return ERROR;
+}
+{integer} {
+  updateCol();
+  return INTCONST;
+}
 {character}     //TODO
 {string}        {updateCol(); return processString();}
 {untermstring}  {updateCol(); yyerror = "Unterminated string"; return ERROR;}
@@ -112,7 +126,10 @@ yylineno = 1;
  /* Other */
 {newline}       //TODO
 {whitespace}    //TODO
-.               {return ILLEGAL_TOK;}
+. {
+    updateCol();
+    return ILLEGAL_TOK;
+}
 
 %%
 
