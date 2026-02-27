@@ -12,62 +12,123 @@ int yycol = 1;
 int scanlineno = 1;
 
  /* char pointer to pass error messages to driver.c */
-char *yyerror;
+char *yyerror = NULL;
 
- /* TODO: functions to update line and column numbers */
+ /* functions to update line and column numbers */
 void updateCol();
 void countLines();
 
- /* TODO: function to process a string literal */
+ /* function to process a string literal */
 int processString();
 
 %}
 
 newline         \n
 whitespace      [ \t\r]+
-integer         //TODO
-character       //TODO
+integer         0|[1-9][0-9]*
+integerlead0    0[0-9]+
+character       \'[^\'\n]\'
 
  /* String can contain any characters between the double quotes */
  /* other than a newline or unescaped doublequotes */
-string       \"([^"\n\\]|\\[nt\"\\])*\"
+string       \"([^"\n\\]|\\[^\n])*\"
+
 
 
  /* If the end quote is not found in the same line the string is unterminated */
-untermstring \"([^"\n\\]|\\[nt\"\\])*\n
+untermstring \"([^"\n\\]|\\[^\n])*\n
 
 comment         \/\/.*
 multlncomment   \/\*([^*]|\*+[^*/])*\*+\/
-untermcomment   \/\*(.|\n)*
+untermcomment   \/\*([^*]|\*+[^*/])*
 
-identifier      //TODO
-illidentifier   //TODO: regular expression for an illegal identifier
 
-yylineno = 1;
+identifier      [A-Za-z][A-Za-z0-9]*
+illidentifier   [0-9]+[A-Za-z][A-Za-z0-9]*
+
 
 %%
 
  /* rules */
 
  /* Keywords */
- /* TODO: Support all keywords in mC */
+if          { updateCol(); return KWD_IF; }
+else        { updateCol(); return KWD_ELSE; }
+while       { updateCol(); return KWD_WHILE; }
+int         { updateCol(); return KWD_INT; }
+string      { updateCol(); return KWD_STRING; }
+char        { updateCol(); return KWD_CHAR; }
+return      { updateCol(); return KWD_RETURN; }
+void        { updateCol(); return KWD_VOID; }
 
  /* Operators */
- /* TODO: Support all operators in mC */
+ /* Two character operators */
+"++"        { updateCol(); return OPER_INC; }
+"--"        { updateCol(); return OPER_DEC; }
+"<="        { updateCol(); return OPER_LTE; }
+">="        { updateCol(); return OPER_GTE; }
+"=="        { updateCol(); return OPER_EQ; }
+"!="        { updateCol(); return OPER_NEQ; }
+"&&"        { updateCol(); return OPER_AND; }
+"||"        { updateCol(); return OPER_OR; }
 
- /* Identifiers */;
-{identifier}    //TODO
-{illidentifier} //TODO
+ /* One character operators */
+"+"         { updateCol(); return OPER_ADD; }
+"-"         { updateCol(); return OPER_SUB; }
+"*"         { updateCol(); return OPER_MUL; }
+"/"         { updateCol(); return OPER_DIV; }
+"%"         { updateCol(); return OPER_MOD; }
+"<"         { updateCol(); return OPER_LT; }
+">"         { updateCol(); return OPER_GT; }
+"="         { updateCol(); return OPER_ASGN; }
+"!"         { updateCol(); return OPER_NOT; }
+"@"         { updateCol(); return OPER_AT; }
+ /* Brackets and punctuation */
+"["         { updateCol(); return LSQ_BRKT; }
+"]"         { updateCol(); return RSQ_BRKT; }
+"{"         { updateCol(); return LCRLY_BRKT; }
+"}"         { updateCol(); return RCRLY_BRKT; }
+"("         { updateCol(); return LPAREN; }
+")"         { updateCol(); return RPAREN; }
+","         { updateCol(); return COMMA; }
+";"         { updateCol(); return SEMICLN; }
 
- /* Constants */;
-{integer}       //TODO
-{integerlead0}  //TODO: "Integers may not have leading zeros"
-{character}     //TODO
+ /* Identifiers */
+{identifier} {
+  updateCol();
+  return ID;
+}
+{illidentifier} {
+  updateCol();
+  yyerror = "Illegal token";
+  return ERROR;
+}
+
+ /* Constants */
+{integerlead0} {
+  updateCol();
+  yyerror = "Illegal token";
+  return ERROR;
+}
+{integer} {
+  updateCol();
+  return INTCONST;
+}
+{character}     { updateCol(); return CHARCONST; }
 {string}        {updateCol(); return processString();}
 {untermstring}  {updateCol(); countLines(); yyerror = "String spans multiple lines"; return ERROR;}
 
  /* Comments */
 {comment}       { updateCol(); }
+
+{multlncomment} {
+    updateCol();
+    for(int i = 0; i < yyleng; i++){
+        if(yytext[i] == '\n'){
+            countLines();
+        }
+    }
+}
 
 {untermcomment} {
     updateCol();
@@ -80,19 +141,12 @@ yylineno = 1;
     return ERROR;
 }
 
-{multlncomment} {
-    updateCol();
-    for(int i = 0; i < yyleng; i++){
-        if(yytext[i] == '\n'){
-            countLines();
-        }
-    }
-}
 
  /* Other */
 {newline}       { countLines(); }
 {whitespace}    { updateCol(); }
 .               {return ILLEGAL_TOK;}
+
 
 %%
 
@@ -102,6 +156,7 @@ yylineno = 1;
 Implement this function to keep track of column numbers
 */
 void updateCol(){
+    yylineno = scanlineno;
     yycol = scancol;
     scancol += yyleng;
 }
@@ -111,12 +166,11 @@ Implement this function to keep track of line numbers
 */
 void countLines(){
     scanlineno += 1;
-    yylineno = scanlineno;
     scancol = 1;
 }
 
 
-/* TODO:
+/*
 Implement this function to
 check for illegal escape sequences in string literals
 and
