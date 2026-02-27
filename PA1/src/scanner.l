@@ -64,29 +64,29 @@ yylineno = 1;
 {integerlead0}  //TODO: "Integers may not have leading zeros"
 {character}     //TODO
 {string}        {updateCol(); return processString();}
-{untermstring}  {countLines(); updateCol(); yyerror = "Unterminated string"; return ERROR;}
+{untermstring}  {updateCol(); countLines(); yyerror = "String spans multiple lines"; return ERROR;}
 
  /* Comments */
 {comment}       { updateCol(); }
 
 {untermcomment} {
+    updateCol();
     for(int i = 0; i < yyleng; i++){
         if(yytext[i] == '\n'){
             countLines();
         }
     }
-    updateCol();
     yyerror = "Unterminated comment";
     return ERROR;
 }
 
 {multlncomment} {
+    updateCol();
     for(int i = 0; i < yyleng; i++){
         if(yytext[i] == '\n'){
             countLines();
         }
     }
-    updateCol();
 }
 
  /* Other */
@@ -124,4 +124,28 @@ convert valid escape sequences into escaped characters
 (string[0] == '\\' and string[1] == 'n', then string[0] should be '\n')
 */
 int processString(){
+    char buffer[1024];
+    int i = 1;
+    int j = 0;
+
+    while(yytext[i] != '"'){
+        if(yytext[i] == '\\'){
+            i++;
+            if(yytext[i] == 'n')       buffer[j] = '\n';
+            else if(yytext[i] == 't')  buffer[j] = '\t';
+            else if(yytext[i] == '"')  buffer[j] = '"';
+            else if(yytext[i] == '\\') buffer[j] = '\\';
+            else {
+                yyerror = "Unrecognized escape character in String";
+                return ERROR;
+            }
+        } else {
+            buffer[j] = yytext[i];
+        }
+        i++;
+        j++;
+    }
+    buffer[j] = '\0';
+    strcpy(yytext, buffer);
+    return STRCONST;
 }
