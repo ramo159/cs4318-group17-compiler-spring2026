@@ -1,0 +1,71 @@
+CS4318
+Project Phase 1
+
+Group 17
+Omar Garcia, oag18
+Samad Ahmad, lom32
+
+Contributions: 
+
+Omar (scanner-core branch):
+Implemented updateCol() and countLines() for line and column tracking
+Added newline and whitespace rules
+Added single-line comment rule
+Added multi-line comment rule with line counting
+Added unterminated comment rule with error message
+Added string literal regex and processString() function
+Added unterminated string rule with error message
+Implemented escape sequence handling in processString() for \n, \t, \", \\
+Added error detection for unrecognized escape sequences
+
+Samad (scanner-tokens branch):
+Added keyword rules (if, else, while, int, string, char, return, void)
+Added operator rules (arithmetic, comparison, logical, assignment)
+Added bracket and punctuation rules
+Added identifier and illegal identifier rules
+Added integer constant and leading-zero error rules
+Added character constant rule
+
+Test Cases:
+
+Test 1:
+  Input:
+    int x = 0;
+    // set x
+    x = x + 1;
+
+  Expected Output:
+    <KEYWORD, int> : (1:1)
+    <ID, x> : (1:5)
+    <OPERATOR, => : (1:7)
+    <INTEGER, 0> : (1:9)
+    <PUNCTUATION, ;> : (1:10)
+    <ID, x> : (3:1)
+    <OPERATOR, => : (3:3)
+    <ID, x> : (3:5)
+    <OPERATOR, +> : (3:7)
+    <INTEGER, 1> : (3:9)
+    <PUNCTUATION, ;> : (3:10)
+
+  This tests keyword, identifier, operator, and integer token recognition
+  along with single line comment skipping and line tracking
+
+Test 2:
+  Input:
+    /* this is a
+       block comment */
+    char c = 'a';
+    int 9bad;
+
+  Expected Output:
+    <KEYWORD, char> : (3:1)
+    <ID, c> : (3:6)
+    <OPERATOR, => : (3:8)
+    <CHARACTER, 'a'> : (3:10)
+    <PUNCTUATION, ;> : (3:13)
+    <KEYWORD, int> : (4:1)
+    <ERROR, Illegal token> : (4:5)
+    <PUNCTUATION, ;> : (4:9)
+
+  This tests multi line comment skipping with line tracking, character
+  constants, and illegal identifier detection
